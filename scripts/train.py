@@ -21,8 +21,9 @@ from mobility_rl import make_env  # noqa: E402
 HYPERPARAMS = {
     "PPO": dict(n_steps=1024, batch_size=256, n_epochs=10, gamma=0.99, gae_lambda=0.95, learning_rate=3e-4,
                 clip_range=0.2, ent_coef=0.0, policy_kwargs=dict(net_arch=[64, 64], log_std_init=-1.0)),
-    "SAC": dict(buffer_size=300_000, batch_size=256, gamma=0.99, tau=0.005, learning_rate=3e-4,
-                learning_starts=5_000, train_freq=1, gradient_steps=1, policy_kwargs=dict(net_arch=[256, 256])),
+    # 2 gradient steps every 4 env steps + small nets: ~4x faster on a laptop CPU than SB3 defaults
+    "SAC": dict(buffer_size=300_000, batch_size=128, gamma=0.99, tau=0.005, learning_rate=3e-4,
+                learning_starts=5_000, train_freq=4, gradient_steps=2, policy_kwargs=dict(net_arch=[64, 64])),
 }
 
 

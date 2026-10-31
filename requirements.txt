@@ -1,0 +1,10 @@
+gymnasium==1.4.0
+stable-baselines3==2.9.2
+torch>=2.3
+numpy>=1.26
+scipy>=1.11
+matplotlib>=3.8
+onnx>=1.16
+onnxruntime>=1.18
+tensorboard>=2.16
+pytest>=8.0
