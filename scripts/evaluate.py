@@ -5,7 +5,7 @@ Two test sets per environment (same 100 seeds for every controller):
   shift : harder, partly out-of-distribution parameters (see RANGES in the env files)
 
     python scripts/evaluate.py --episodes 100
-Writes results/metrics.json and results/RESULTS.md
+Writes results/metrics_<env>.json, merged into results/metrics.json and results/RESULTS.md
 """
 
 import argparse
@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT))
 from stable_baselines3 import PPO, SAC  # noqa: E402
 
 from mobility_rl.controllers import BASELINES  # noqa: E402
+from mobility_rl.residual import ResidualPolicy, tuned_baseline  # noqa: E402
 from mobility_rl.rollout import BaselinePolicy, SB3Policy, evaluate, summarize  # noqa: E402
 
 RL_RUNS = {
@@ -37,6 +38,9 @@ def load_policies(env_name):
         path = ROOT / "runs" / f"{env_name}_{algo}_{tag}" / "best_model.zip"
         if path.exists():
             policies[label] = SB3Policy({"PPO": PPO, "SAC": SAC}[algo].load(path, device="cpu"))
+    res = ROOT / "runs" / f"{env_name}_PPO_res" / "best_model.zip"
+    if res.exists():
+        policies["Residual PPO"] = ResidualPolicy(PPO.load(res, device="cpu"), tuned_baseline(env_name, "LQR"))
     return policies
 
 
@@ -58,6 +62,12 @@ def main():
 
     out = ROOT / "results"
     out.mkdir(exist_ok=True)
+    # one file per environment so evaluations can run in parallel processes, then merge
+    for env_name, rows in metrics.items():
+        (out / f"metrics_{env_name}.json").write_text(json.dumps({env_name: rows}, indent=2))
+    metrics = {}
+    for f in sorted(out.glob("metrics_*.json")):
+        metrics.update(json.loads(f.read_text()))
     (out / "metrics.json").write_text(json.dumps(metrics, indent=2))
 
     lines = [f"# Results ({args.episodes} episodes per cell, identical seeds for every controller)\n"]

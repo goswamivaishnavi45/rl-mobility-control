@@ -20,6 +20,7 @@ from stable_baselines3 import PPO, SAC
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from mobility_rl import make_env  # noqa: E402
+from mobility_rl.residual import ResidualWrapper, tuned_baseline  # noqa: E402
 
 
 class DeterministicActor(torch.nn.Module):
@@ -36,21 +37,27 @@ class DeterministicActor(torch.nn.Module):
         return torch.clamp(self.policy.action_net(latent_pi), -1.0, 1.0)
 
 
-def export(env_name, algo):
-    path = ROOT / "runs" / f"{env_name}_{algo}_dr" / "best_model.zip"
+def make_eval_env(env_name, residual):
+    env = make_env(env_name, "train")
+    return ResidualWrapper(env, tuned_baseline(env_name, "LQR")) if residual else env
+
+
+def export(env_name, algo, tag="dr"):
+    residual = tag == "res"
+    path = ROOT / "runs" / f"{env_name}_{algo}_{tag}" / "best_model.zip"
     if not path.exists():
         return None
     model = {"PPO": PPO, "SAC": SAC}[algo].load(path, device="cpu")
     actor = DeterministicActor(model).eval()
-    obs_dim = make_env(env_name).observation_space.shape[0]
+    obs_dim = make_eval_env(env_name, residual).observation_space.shape[0]
 
-    out = ROOT / "models" / f"{env_name}_{algo}.onnx"
+    out = ROOT / "models" / f"{env_name}_{algo}{'_residual' if residual else ''}.onnx"
     out.parent.mkdir(exist_ok=True)
     torch.onnx.export(actor, torch.zeros(1, obs_dim), str(out), input_names=["obs"], output_names=["action"],
                       dynamic_axes={"obs": {0: "batch"}, "action": {0: "batch"}}, opset_version=17, dynamo=False)
 
     # Parity: ONNX output vs SB3 predict() on real observations
-    env = make_env(env_name, "train")
+    env = make_eval_env(env_name, residual)
     obs_batch = []
     obs, _ = env.reset(seed=0)
     for _ in range(500):
@@ -79,17 +86,17 @@ def export(env_name, algo):
     times = np.array(times) * 1e6
     res = dict(file=out.name, size_kb=round(out.stat().st_size / 1024, 1), max_abs_diff_vs_pytorch=max_diff,
                latency_us_median=float(np.median(times)), latency_us_p99=float(np.percentile(times, 99)))
-    print(env_name, algo, res)
+    print(env_name, algo, tag, res)
     return res
 
 
 def main():
     results = {}
     for env_name in ("motorcycle", "boat"):
-        for algo in ("PPO", "SAC"):
-            r = export(env_name, algo)
+        for algo, tag in (("PPO", "dr"), ("SAC", "dr"), ("PPO", "res")):
+            r = export(env_name, algo, tag)
             if r:
-                results[f"{env_name}_{algo}"] = r
+                results[f"{env_name}_{algo}_{tag}"] = r
     (ROOT / "results" / "onnx_benchmark.json").write_text(json.dumps(results, indent=2))
 
 

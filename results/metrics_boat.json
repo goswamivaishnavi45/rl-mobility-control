@@ -1,0 +1,68 @@
+{
+  "boat": {
+    "PID": {
+      "train": {
+        "episodes": 100,
+        "mean_return": 734.2116036423583,
+        "fall_rate": 0.0,
+        "mean_abs_heading_err_deg": 9.328570006554399,
+        "mean_action_rate": 0.988734164433924
+      },
+      "shift": {
+        "episodes": 100,
+        "mean_return": 710.5739432006984,
+        "fall_rate": 0.0,
+        "mean_abs_heading_err_deg": 10.886495618983206,
+        "mean_action_rate": 1.6296016198713266
+      }
+    },
+    "LQR": {
+      "train": {
+        "episodes": 100,
+        "mean_return": 734.3040465065092,
+        "fall_rate": 0.0,
+        "mean_abs_heading_err_deg": 9.493750540859407,
+        "mean_action_rate": 0.9734576428971065
+      },
+      "shift": {
+        "episodes": 100,
+        "mean_return": 712.9622977360548,
+        "fall_rate": 0.0,
+        "mean_abs_heading_err_deg": 10.720083714348425,
+        "mean_action_rate": 1.683807320877686
+      }
+    },
+    "PPO": {
+      "train": {
+        "episodes": 100,
+        "mean_return": 694.2859380681434,
+        "fall_rate": 0.0,
+        "mean_abs_heading_err_deg": 12.72101854360459,
+        "mean_action_rate": 0.21322581076163702
+      },
+      "shift": {
+        "episodes": 100,
+        "mean_return": 632.8532350974597,
+        "fall_rate": 0.0,
+        "mean_abs_heading_err_deg": 15.48905168580035,
+        "mean_action_rate": 0.28447598268022056
+      }
+    },
+    "SAC": {
+      "train": {
+        "episodes": 100,
+        "mean_return": 600.6719151291074,
+        "fall_rate": 0.0,
+        "mean_abs_heading_err_deg": 18.44911391917805,
+        "mean_action_rate": 2.3298605256205276
+      },
+      "shift": {
+        "episodes": 100,
+        "mean_return": 567.8181059462436,
+        "fall_rate": 0.0,
+        "mean_abs_heading_err_deg": 19.403994429828252,
+        "mean_action_rate": 2.4064034805016736
+      }
+    }
+  }
+}

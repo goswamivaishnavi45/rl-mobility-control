@@ -21,7 +21,7 @@ from scripts.evaluate import load_policies  # noqa: E402
 
 FIG = ROOT / "results" / "figures"
 # Fixed categorical order: colour follows the controller in every figure
-COLORS = {"PID": "#2a78d6", "LQR": "#eb6834", "PPO": "#1baf7a", "SAC": "#eda100", "PPO (no DR)": "#e87ba4"}
+COLORS = {"PID": "#2a78d6", "LQR": "#eb6834", "PPO": "#1baf7a", "SAC": "#eda100", "PPO (no DR)": "#e87ba4", "Residual PPO": "#6250d6"}
 INK, INK2, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
 
 plt.rcParams.update({
@@ -36,7 +36,8 @@ plt.rcParams.update({
 def learning_curves():
     fig, axes = plt.subplots(1, 2, figsize=(11, 3.8))
     for ax, env_name in zip(axes, ("motorcycle", "boat")):
-        for label, run in (("PPO", "PPO_dr"), ("SAC", "SAC_dr"), ("PPO (no DR)", "PPO_nodr")):
+        for label, run in (("PPO", "PPO_dr"), ("SAC", "SAC_dr"), ("PPO (no DR)", "PPO_nodr"),
+                           ("Residual PPO", "PPO_res")):
             f = ROOT / "runs" / f"{env_name}_{run}" / "evaluations.npz"
             if not f.exists():
                 continue
@@ -54,7 +55,7 @@ def learning_curves():
 
 
 def rollouts(env_name, seed, split="shift"):
-    policies = {k: v for k, v in load_policies(env_name).items() if k in ("PID", "LQR", "PPO", "SAC")}
+    policies = {k: v for k, v in load_policies(env_name).items() if k in ("PID", "LQR", "PPO", "Residual PPO")}
     traces = {}
     for label, pol in policies.items():
         _, trace = run_episode(make_env(env_name, split), pol, seed, record=True)
