@@ -8,7 +8,48 @@ Deep reinforcement learning controllers (PPO, SAC) for two mobility platforms, t
 | Boat | Hold and change heading (±60° course changes) | Rudder (±35°, rate-limited to 15°/s) | Slow, sluggish response, wind/current bias, waves, servo lag |
 
 <!-- RESULTS -->
-> **Status:** baselines and end-to-end RL agents are trained; residual-RL training and the final evaluation are in progress. See [STATUS.md](STATUS.md) for current numbers.
+## Results
+
+**RL did not beat tuned classical control on these tasks.** End-to-end PPO and SAC lose clearly to the tuned baselines. Residual PPO on top of LQR essentially matches LQR, and its main measurable gain is smoother actuation: 14–25% lower action rate, at the cost of about 0.2–0.4° more heading error.
+
+100 episodes per cell, same seeds for every controller. Each cell is training distribution / shifted test set. Best return in each column group is in bold.
+
+| Env | Controller | Mean return | Mean abs heading error (°) | Fall rate (%) | Action rate (1/s) |
+|---|---|---|---|---|---|
+| Motorcycle | PID | 960.1 / **888.7** | 10.73 / 12.78 | 0 / 11 | 1.30 / 1.21 |
+| | LQR | **974.0** / 870.3 | 6.92 / 7.76 | 0 / 18 | 2.48 / 3.78 |
+| | Residual PPO | **974.0** / 872.8 | 7.09 / 7.95 | 0 / 17 | 1.85 / 3.02 |
+| | PPO | 947.0 / 758.3 | 12.18 / 14.76 | 2 / 24 | 1.83 / 3.70 |
+| | PPO (no DR) | 879.9 / 589.6 | 11.55 / 12.55 | 15 / 53 | 1.21 / 2.40 |
+| | SAC | 790.0 / 646.8 | 24.72 / 26.90 | 11 / 28 | 6.11 / 7.40 |
+| Boat | PID | 734.2 / 710.6 | 9.33 / 10.89 | 0 / 0 | 0.99 / 1.63 |
+| | LQR | **734.3** / **713.0** | 9.49 / 10.72 | 0 / 0 | 0.97 / 1.68 |
+| | Residual PPO | 731.7 / 710.8 | 9.87 / 11.04 | 0 / 0 | 0.81 / 1.44 |
+| | PPO | 694.3 / 632.9 | 12.72 / 15.49 | 0 / 0 | 0.21 / 0.28 |
+| | SAC | 601.2 / 567.7 | 18.43 / 19.42 | 0 / 0 | 2.34 / 2.41 |
+
+What the numbers show:
+- **Residual vs LQR:** on the shifted motorcycle set, falls go from 18 to 17 episodes, which is one seed and not a meaningful difference. Boat return is slightly lower (about 0.3%).
+- **Best on the shifted motorcycle set:** PID has the highest return and fewest falls (11%), but LQR and Residual PPO track heading about 5° more accurately.
+- **Residual vs end-to-end PPO:** on the shifted motorcycle set, the residual policy cuts falls from 24% to 17% and heading error from 14.76° to 7.95°. It also trains from a stable controller from the first step (see learning curves).
+- **Domain randomization:** on the shifted motorcycle set, PPO falls 24% of the time with DR and 53% without.
+
+Caveats:
+- Heading error and action rate are averaged only over episodes without a fall, so compare them alongside fall rate. Mean return covers all episodes.
+- Each agent was trained with a single seed.
+- SAC had far fewer steps than PPO (120k vs 1M on the motorcycle, 100k vs 600k on the boat), so this is not a fair PPO vs SAC comparison.
+
+**ONNX deployment** (`results/onnx_benchmark.json`): all six exported policies match PyTorch to within 3.7e-7 on 500 observations. Single-observation median latency is 17–26 µs and p99 is under 50 µs on a desktop CPU with one thread, not yet measured on embedded hardware. Each file is about 20–22 KB. The residual models contain only the correction, so LQR must run alongside them.
+
+![Fall rate and heading error by controller](results/figures/robustness.png)
+
+![Evaluation return during training](results/figures/learning_curves.png)
+
+![Motorcycle rollout on a shifted scenario](results/figures/rollout_motorcycle.png)
+
+![Boat rollout on a shifted scenario](results/figures/rollout_boat.png)
+
+The rollouts show one seed each, not an average: in the motorcycle scenario above, all four controllers eventually fall.
 
 ## How it works
 
