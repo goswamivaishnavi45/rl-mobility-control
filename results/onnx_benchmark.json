@@ -1,0 +1,44 @@
+{
+  "motorcycle_PPO_dr": {
+    "file": "motorcycle_PPO.onnx",
+    "size_kb": 20.4,
+    "max_abs_diff_vs_pytorch": 1.1920928955078125e-07,
+    "latency_us_median": 17.39999970595818,
+    "latency_us_p99": 27.100000806967728
+  },
+  "motorcycle_SAC_dr": {
+    "file": "motorcycle_SAC.onnx",
+    "size_kb": 22.0,
+    "max_abs_diff_vs_pytorch": 3.632158041000366e-07,
+    "latency_us_median": 25.400000595254824,
+    "latency_us_p99": 49.59999934726511
+  },
+  "motorcycle_PPO_res": {
+    "file": "motorcycle_PPO_residual.onnx",
+    "size_kb": 20.7,
+    "max_abs_diff_vs_pytorch": 5.960464477539063e-08,
+    "latency_us_median": 17.00000029813964,
+    "latency_us_p99": 29.100999654474457
+  },
+  "boat_PPO_dr": {
+    "file": "boat_PPO.onnx",
+    "size_kb": 19.9,
+    "max_abs_diff_vs_pytorch": 1.7881393432617188e-07,
+    "latency_us_median": 17.300000763498247,
+    "latency_us_p99": 25.800000003073364
+  },
+  "boat_SAC_dr": {
+    "file": "boat_SAC.onnx",
+    "size_kb": 21.5,
+    "max_abs_diff_vs_pytorch": 2.682209014892578e-07,
+    "latency_us_median": 26.199999410891905,
+    "latency_us_p99": 40.50000097777229
+  },
+  "boat_PPO_res": {
+    "file": "boat_PPO_residual.onnx",
+    "size_kb": 20.2,
+    "max_abs_diff_vs_pytorch": 1.4901161193847656e-07,
+    "latency_us_median": 17.500000467407517,
+    "latency_us_p99": 26.20100121930593
+  }
+}
